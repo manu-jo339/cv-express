@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Générateur de CV élégant : remplissez le formulaire, ajoutez votre photo et téléchargez votre CV en PDF. Aucune donnée n'est conservée.">
+<meta name="theme-color" content="#14213d">
+<title>CV Express — Créez un CV élégant en PDF</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Module PDF (chargé depuis un CDN, avec un second CDN en secours) -->
+<script>
+(function () {
+  function load(src, next) {
+    var s = document.createElement('script');
+    s.src = src; s.async = true;
+    s.onerror = function () { if (next) next(); };
+    document.head.appendChild(s);
+  }
+  load('https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js', function () {
+    load('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
+  });
+})();
+</script>
+
+<style>
+/* =====================================================================
+   1. INTERFACE DE L'APPLICATION
+   ===================================================================== */
+:root{
+  --navy:#14213d; --navy-2:#1d3260; --gold:#e0a43a;
+  --bg:#eef1f7; --card:#fff; --ink:#18212f; --muted:#66748a; --line:#e2e7f0;
+  --brand:#2457c5; --brand-2:#3b78ec; --danger:#c0392b;
+  --r:16px; --shadow:0 1px 2px rgba(20,33,61,.05),0 8px 28px rgba(20,33,61,.07);
+  --sans:"Plus Jakarta Sans","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;font-family:var(--sans);color:var(--ink);line-height:1.5;
+  background:
+    radial-gradient(900px 420px at 8% -5%,rgba(59,120,236,.14),transparent 60%),
+    radial-gradient(800px 380px at 100% 0,rgba(224,164,58,.12),transparent 60%),
+    var(--bg);
+  background-attachment:fixed;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+
+/* --- En-tête --- */
+.app-header{
+  position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  padding:.8rem 1.4rem;color:#fff;
+  background:linear-gradient(100deg,var(--navy) 0%,var(--navy-2) 100%);
+  box-shadow:0 6px 24px rgba(20,33,61,.25);
+}
+.brand{display:flex;align-items:center;gap:.8rem;min-width:0}
+.logo{
+  width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none;
+  font-weight:800;letter-spacing:.02em;color:var(--navy);
+  background:linear-gradient(140deg,#f6c765,var(--gold));box-shadow:0 4px 14px rgba(224,164,58,.45);
+}
+.brand h1{margin:0;font-size:1.15rem;font-weight:800;letter-spacing:.01em;line-height:1.1}
+.brand p{margin:.1rem 0 0;font-size:.74rem;color:#b9c4dd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-actions{display:flex;gap:.55rem;align-items:center}
+
+/* --- Boutons --- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;cursor:pointer;
+  border:1px solid transparent;border-radius:11px;padding:.6rem 1rem;font-weight:600;font-size:.88rem;
+  background:#fff;color:var(--navy);transition:transform .12s,box-shadow .2s,background .2s,opacity .2s;
+  text-decoration:none;line-height:1.2;white-space:nowrap;
+}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:.55;cursor:default;transform:none}
+.btn.primary{background:linear-gradient(135deg,#f6c765,var(--gold));color:#2a1d00;box-shadow:0 6px 18px rgba(224,164,58,.4)}
+.btn.primary:hover{box-shadow:0 8px 22px rgba(224,164,58,.55)}
+.btn.ghost{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.22)}
+.btn.ghost:hover{background:rgba(255,255,255,.18)}
+.btn.blue{background:linear-gradient(135deg,var(--brand-2),var(--brand));color:#fff;box-shadow:0 6px 18px rgba(36,87,197,.3)}
+.btn.line{background:#fff;border-color:var(--line);color:var(--navy)}
+.btn.line:hover{border-color:#c7d1e3;box-shadow:0 4px 12px rgba(20,33,61,.08)}
+.btn.small{padding:.45rem .8rem;font-size:.8rem;border-radius:9px}
+.btn svg{width:17px;height:17px;flex:none}
+
+/* --- Mise en page --- */
+.layout{display:grid;grid-template-columns:minmax(380px,540px) 1fr;gap:26px;max-width:1520px;margin:0 auto;padding:24px 22px 40px}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);border:1px solid rgba(226,231,240,.8)}
+.form-panel{display:flex;flex-direction:column;gap:16px;min-width:0}
+.intro{
+  padding:1.1rem 1.25rem;display:flex;gap:.9rem;align-items:flex-start;
+  background:linear-gradient(135deg,#fff,#f6f9ff);
+}
+.intro .shield{width:38px;height:38px;border-radius:11px;flex:none;display:grid;place-items:center;background:#e8f0ff;color:var(--brand)}
+.intro h2{margin:0 0 .15rem;font-size:.98rem}
+.intro p{margin:0;font-size:.83rem;color:var(--muted)}
+
+.sect{padding:1.2rem 1.25rem 1.3rem}
+.sect>h2{display:flex;align-items:center;gap:.7rem;margin:0 0 1rem;font-size:1.02rem;font-weight:700}
+.num{
+  width:28px;height:28px;border-radius:9px;display:grid;place-items:center;flex:none;font-size:.82rem;font-weight:800;
+  color:#fff;background:linear-gradient(135deg,var(--brand-2),var(--brand));
+}
+.opt{margin-left:auto;font-size:.7rem;font-weight:600;color:var(--muted);background:#f0f3f9;padding:.15rem .55rem;border-radius:2rem}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.span2{grid-column:1/-1}
+.f{display:flex;flex-direction:column;gap:.3rem;min-width:0}
+.f>span{font-size:.76rem;font-weight:600;color:#44546a}
+.f input,.f textarea,.f select,.tags{
+  width:100%;border:1.5px solid var(--line);border-radius:11px;padding:.62rem .8rem;background:#fbfcfe;
+  font-size:.92rem;transition:border-color .15s,box-shadow .15s,background .15s;
+}
+.f textarea{resize:vertical;min-height:92px;line-height:1.45}
+.f input:focus,.f textarea:focus,.f select:focus,.tags:focus-within{
+  outline:none;border-color:var(--brand-2);background:#fff;box-shadow:0 0 0 4px rgba(59,120,236,.14);
+}
+.f input::placeholder,.f textarea::placeholder{color:#a3afc2}
+.hint{margin:.3rem 0 0;font-size:.76rem;color:var(--muted)}
+
+/* Photo */
+.photo-box{display:flex;gap:1rem;align-items:center;margin-bottom:1rem}
+.photo-preview{
+  width:92px;height:92px;border-radius:50%;flex:none;display:grid;place-items:center;overflow:hidden;
+  background:#eef2fa center/cover no-repeat;border:2px dashed #b9c6de;color:#8696b3;font-size:.72rem;font-weight:600;text-align:center;
+}
+.photo-preview.has{border:3px solid #fff;box-shadow:0 0 0 2px var(--brand-2),0 8px 20px rgba(20,33,61,.18)}
+.photo-ctl{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+.photo-ctl .hint{flex-basis:100%;margin:0}
+.photo-adjust{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:-.2rem 0 1rem;padding:.8rem;background:#f6f8fc;border-radius:12px}
+.photo-adjust label{display:flex;flex-direction:column;gap:.25rem;font-size:.72rem;font-weight:600;color:#44546a}
+.photo-adjust input[type=range]{width:100%;accent-color:var(--brand)}
+
+/* Listes dynamiques */
+.li{border:1.5px solid var(--line);border-radius:13px;padding:.85rem;margin-bottom:.8rem;background:#fcfdff}
+.li-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem}
+.li-head b{font-size:.82rem;color:var(--navy)}
+.li-actions{display:flex;gap:.3rem}
+.li-actions button{
+  width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:.85rem;line-height:1;color:#51607a;
+}
+.li-actions button:hover:not(:disabled){background:#f0f4fb}
+.li-actions button:disabled{opacity:.35;cursor:default}
+.li-actions button.danger:hover{background:#fdecea;color:var(--danger);border-color:#f5c6c0}
+.li-fields{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.empty{margin:0 0 .8rem;font-size:.84rem;color:var(--muted);text-align:center;padding:.9rem;border:1.5px dashed var(--line);border-radius:12px}
+.add-btn{width:100%;border:1.5px dashed #b6c4de;background:#f5f8ff;color:var(--brand);border-radius:12px;padding:.7rem;font-weight:700;cursor:pointer;font-size:.86rem}
+.add-btn:hover{background:#eaf1ff;border-color:var(--brand-2)}
+
+/* Étiquettes (compétences, centres d'intérêt) */
+.tags{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;padding:.5rem .6rem;cursor:text}
+.chips{display:contents}
+.chip{display:inline-flex;align-items:center;gap:.35rem;background:#e8f0ff;color:#1d429a;font-size:.84rem;font-weight:600;padding:.28rem .35rem .28rem .75rem;border-radius:2rem}
+.chip button{border:0;background:rgba(36,87,197,.14);color:#1d429a;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:.72rem;line-height:1;padding:0}
+.chip button:hover{background:rgba(192,57,43,.2);color:var(--danger)}
+.tags input{flex:1;min-width:140px;border:0;outline:0;background:transparent;padding:.3rem .25rem;font-size:.92rem}
+
+/* --- Panneau d'aperçu --- */
+.preview-panel{position:sticky;top:84px;align-self:start;max-height:calc(100vh - 100px);overflow:auto;padding:2px 4px 8px 2px;min-width:0}
+.toolbar{margin-bottom:14px}
+.toolbar summary{list-style:none;cursor:pointer;padding:.85rem 1.1rem;font-weight:700;font-size:.95rem;display:flex;align-items:center;gap:.6rem}
+.toolbar summary::-webkit-details-marker{display:none}
+.toolbar summary::after{content:"";margin-left:auto;width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s;flex:none}
+.toolbar[open] summary::after{transform:rotate(-135deg)}
+.toolbar summary small{font-weight:500;color:var(--muted);font-size:.76rem}
+.tb-body{padding:.1rem 1.1rem 1rem;display:grid;gap:.7rem}
+.tb-row{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.tb-l{width:62px;font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);flex:none}
+.seg{display:inline-flex;background:#eef2f9;border-radius:11px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;border-radius:9px;padding:.42rem .85rem;font-size:.82rem;font-weight:600;color:#54627a;cursor:pointer;transition:all .15s}
+.seg button.on{background:#fff;color:var(--navy);box-shadow:0 2px 8px rgba(20,33,61,.12)}
+.swatches{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.sw{width:26px;height:26px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #d3dbe9;cursor:pointer;padding:0;transition:transform .12s}
+.sw:hover{transform:scale(1.12)}
+.sw.on{box-shadow:0 0 0 2.5px var(--navy)}
+.color-name{flex-basis:100%;margin:-.2rem 0 0 calc(62px + .8rem);font-size:.78rem;font-weight:600;color:var(--navy)}
+.sw.custom{position:relative;overflow:hidden;background:conic-gradient(#e11d48,#f59e0b,#10b981,#3b82f6,#8b5cf6,#e11d48)}
+.sw.custom input{position:absolute;inset:-6px;width:40px;height:40px;opacity:0;cursor:pointer}
+
+.paper-wrap{position:relative;max-width:794px;margin:0 auto;border-radius:6px;box-shadow:0 2px 6px rgba(20,33,61,.1),0 24px 60px rgba(20,33,61,.2)}
+.paper-scaler{width:794px;transform-origin:top left;position:relative;background:#fff}
+.pg-guide{position:absolute;left:0;right:0;height:0;border-top:2px dashed rgba(224,60,60,.55);z-index:5;pointer-events:none}
+.pg-guide span{position:absolute;right:8px;top:-22px;background:rgba(224,60,60,.9);color:#fff;font:600 11px/1 var(--sans);padding:4px 8px;border-radius:6px}
+.preview-actions{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin:16px 0 6px}
+.page-info{text-align:center;font-size:.8rem;color:var(--muted);margin:.4rem auto 0;max-width:640px}
+.page-info b{color:var(--navy)}
+
+.site-footer{text-align:center;padding:1.4rem 1rem 6rem;font-size:.8rem;color:var(--muted)}
+.site-footer strong{color:var(--navy)}
+
+/* Notification */
+.toast{
+  position:fixed;left:50%;bottom:92px;transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:60;
+  background:var(--navy);color:#fff;padding:.75rem 1.1rem;border-radius:12px;font-size:.88rem;max-width:min(92vw,520px);
+  box-shadow:0 12px 34px rgba(20,33,61,.35);transition:all .25s;text-align:center;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* Barre de navigation mobile */
+.mobile-nav{display:none}
+
+@media (max-width:959px){
+  .layout{grid-template-columns:1fr;padding:14px 12px 24px;gap:14px}
+  .preview-panel{position:static;max-height:none;overflow:visible;padding:0}
+  body[data-view="form"] .preview-panel{display:none}
+  body[data-view="preview"] .form-panel{display:none}
+  .header-actions .btn{display:none}
+  .brand p{display:none}
+  .mobile-nav{
+    display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:.5rem;position:fixed;left:0;right:0;bottom:0;z-index:40;
+    padding:.6rem .75rem calc(.6rem + env(safe-area-inset-bottom));background:rgba(255,255,255,.92);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);
+  }
+  .mobile-nav .btn{padding:.7rem .4rem;border-radius:12px}
+  .mobile-nav .btn.tab{background:#eef2f9;color:#51607a}
+  .mobile-nav .btn.tab.on{background:var(--navy);color:#fff}
+  .preview-actions{display:none}
+  .tb-l{width:100%}
+  .sect{padding:1.05rem 1rem 1.15rem}
+}
+@media (max-width:480px){
+  .grid2,.li-fields{grid-template-columns:1fr}
+  .photo-adjust{grid-template-columns:1fr}
+}
+
+/* =====================================================================
+   2. LE CV (largeur fixe A4 = 794 px ; tout est en « em » pour la taille du texte)
+   Les sélecteurs commencent tous par .cv afin que l'export PDF
+   (qui clone l'élément) conserve exactement le même rendu.
+   ===================================================================== */
+.cv{
+  --ff-sans:"Plus Jakarta Sans","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --ff-head:"Playfair Display",Georgia,"Times New Roman",serif;
+  --ff-body:"Lora",Georgia,"Times New Roman",serif;
+  width:794px;background:#fff;color:#273244;font-family:var(--ff-sans);
+  font-size:var(--fs,13px);line-height:1.5;text-align:left;position:relative;overflow:hidden;
+}
+.cv.sz-compact{--fs:11.8px}
+.cv.sz-normal{--fs:13px}
+.cv.sz-large{--fs:14.2px}
+.cv *{box-sizing:border-box}
+.cv h1,.cv h2,.cv p,.cv ul{margin:0;padding:0}
+.cv ul{list-style:none}
+.cv .ph-name{opacity:.35}
+
+/* Photo */
+.cv .photo{display:block;width:10em;height:10em;background:#fff}
+.cv.ph-circle .photo{border-radius:50%}
+.cv.ph-rounded .photo{border-radius:1.4em}
+.cv.ph-square .photo{border-radius:.2em}
+
+/* Éléments communs : expériences, formations */
+.cv .item{margin-bottom:1.15em;break-inside:avoid;page-break-inside:avoid}
+.cv .item-top{display:flex;justify-content:space-between;align-items:baseline;gap:1em}
+.cv .item-t{font-weight:700;color:#141c2b;font-size:1.04em}
+.cv .item-p{font-size:.8em;font-weight:600;white-space:nowrap}
+.cv .item-s{font-size:.94em;font-weight:600;color:var(--ac);margin-top:.12em}
+.cv .item ul{margin-top:.4em}
+.cv .item li{position:relative;padding-left:1.05em;margin:.2em 0;color:#3a475c}
+.cv .item li::before{content:"";position:absolute;left:.05em;top:.62em;width:.34em;height:.34em;border-radius:50%;background:var(--ac)}
+.cv .item p{margin-top:.35em;color:#3a475c}
+.cv .profil{color:#3a475c;line-height:1.65}
+.cv .lang{break-inside:avoid}
+.cv .dots{display:inline-flex;gap:.28em;align-items:center}
+.cv .dots i{display:block;width:.62em;height:.62em;border-radius:50%;border:1.5px solid var(--ac)}
+.cv .dots i.on{background:var(--ac)}
+.cv .sec{break-inside:avoid-page}
+
+/* ---------------- Modèle 1 : MODERNE (colonne latérale + frise) ---------------- */
+.cv.t-modern{display:grid;grid-template-columns:268px 1fr}
+.t-modern .side{
+  background:linear-gradient(172deg,var(--bg1) 0%,var(--bg2) 100%);color:var(--on);
+  padding:2.7em 1.65em 2.2em;position:relative;overflow:hidden;
+}
+.t-modern .side::before{
+  content:"";position:absolute;left:-5em;bottom:-5em;width:16em;height:16em;border-radius:50%;background:rgba(var(--on-rgb),.07);
+}
+.t-modern .side>*{position:relative}
+.t-modern .side .photo{margin:0 auto 2.1em;width:10.6em;height:10.6em;border:.3em solid rgba(var(--on-rgb),.3);box-shadow:0 .6em 1.6em rgba(0,0,0,.2)}
+.t-modern .side .sec{margin-bottom:1.7em}
+.t-modern .side .sec-title{
+  font-size:.82em;text-transform:uppercase;letter-spacing:.2em;font-weight:800;margin-bottom:.95em;
+  display:flex;align-items:center;gap:.7em;
+}
+.t-modern .side .sec-title::after{content:"";flex:1;height:1px;background:rgba(var(--on-rgb),.35)}
+.t-modern .ct{display:flex;gap:.7em;align-items:flex-start;margin:.65em 0;font-size:.9em;word-break:break-word;line-height:1.4}
+.t-modern .ct .ico{flex:none;width:1.9em;height:1.9em;border-radius:50%;background:rgba(var(--on-rgb),.16);display:flex;align-items:center;justify-content:center;margin-top:-.15em}
+.t-modern .ct span:last-child{padding-top:.2em}
+.t-modern .inf{margin:.6em 0;font-size:.9em}
+.t-modern .inf b{display:block;font-size:.76em;text-transform:uppercase;letter-spacing:.12em;opacity:.72;font-weight:700}
+.t-modern .chips{display:flex;flex-wrap:wrap;gap:.45em}
+.t-modern .chips li{background:rgba(var(--on-rgb),.15);border-radius:2em;padding:.24em .85em;font-size:.84em;font-weight:500}
+.t-modern .lang{margin:.7em 0;font-size:.92em}
+.t-modern .lang-n{font-weight:600;display:block}
+.t-modern .dots{margin-top:.35em}
+.t-modern .dots i{border-color:var(--on)}
+.t-modern .dots i.on{background:var(--on)}
+.t-modern .lang-l{display:none}
+.t-modern .main{padding:2.8em 2.3em 2.2em}
+.t-modern .head{margin-bottom:1.9em}
+.t-modern .head h1{font-size:2.75em;line-height:1.02;color:#101827;letter-spacing:-.01em}
+.t-modern .fn{font-weight:300;display:block}
+.t-modern .ln{font-weight:800;display:block;text-transform:uppercase}
+.t-modern .job{margin-top:.75em;font-size:.95em;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ac)}
+.t-modern .head::after{content:"";display:block;width:3.4em;height:.3em;border-radius:1em;background:linear-gradient(90deg,var(--ac),var(--ac-d));margin-top:1.2em}
+.t-modern .main .sec{margin-bottom:1.6em}
+.t-modern .main .sec-title{
+  display:flex;align-items:center;gap:.8em;margin-bottom:1em;font-size:.95em;font-weight:800;
+  text-transform:uppercase;letter-spacing:.17em;color:var(--ac);
+}
+.t-modern .main .sec-title::after{content:"";flex:1;height:2px;background:rgba(var(--ac-rgb),.18);border-radius:2px}
+.t-modern .main .item{position:relative;padding-left:1.6em;border-left:2px solid rgba(var(--ac-rgb),.2);margin-left:.4em;margin-bottom:1.3em}
+.t-modern .main .item::before{
+  content:"";position:absolute;left:calc(-.4em - 1.5px);top:.32em;width:.8em;height:.8em;border-radius:50%;
+  background:#fff;border:.2em solid var(--ac);
+}
+.t-modern .item-p{background:rgba(var(--ac-rgb),.1);color:var(--ac-d);padding:.14em .8em;border-radius:2em}
+
+/* ---------------- Modèle 2 : ÉLÉGANT (serif, deux colonnes) ---------------- */
+.cv.t-classic{font-family:var(--ff-body);color:#2b2f38}
+.t-classic .head{
+  display:flex;justify-content:space-between;align-items:center;gap:2em;margin:2.4em 2.6em 0;padding-bottom:1.6em;
+  border-bottom:4px double var(--ac);
+}
+.t-classic .head h1{font-family:var(--ff-head);font-size:2.9em;line-height:1.05;color:var(--ac-d);font-weight:700}
+.t-classic .fn{font-weight:500}
+.t-classic .ln{font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.t-classic .job{margin-top:.55em;font-size:1.15em;font-style:italic;color:#4a5160}
+.t-classic .ctl{display:flex;flex-wrap:wrap;gap:.4em 1.5em;margin-top:1.1em;font-family:var(--ff-sans);font-size:.84em;color:#3c4556}
+.t-classic .ctl li{display:flex;align-items:center;gap:.5em}
+.t-classic .photo{flex:none;border:.28em solid #fff;box-shadow:0 0 0 .14em var(--ac),0 .5em 1.4em rgba(0,0,0,.16);width:9.6em;height:9.6em}
+.t-classic .body{display:grid;grid-template-columns:1fr 14.2em;gap:0 2.2em;padding:1.9em 2.6em 2.4em}
+.t-classic .col-r{border-left:1px solid rgba(var(--ac-rgb),.35);padding-left:1.7em}
+.t-classic .sec{margin-bottom:1.55em}
+.t-classic .sec-title{
+  font-family:var(--ff-head);font-size:1.25em;font-weight:700;color:var(--ac);margin-bottom:.75em;
+  display:flex;align-items:center;gap:.7em;
+}
+.t-classic .sec-title::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(var(--ac-rgb),.5),transparent)}
+.t-classic .col-r .sec-title{font-size:1.1em}
+.t-classic .item-t{font-family:var(--ff-head);font-size:1.12em;font-weight:700}
+.t-classic .item-p{font-family:var(--ff-sans);color:#6a7385;font-weight:500;font-style:italic}
+.t-classic .item-s{font-style:italic;font-weight:500;color:var(--ac-d)}
+.t-classic .item li,.t-classic .item p,.t-classic .profil{font-size:.97em}
+.t-classic .chips li{position:relative;padding-left:1.1em;margin:.35em 0;font-size:.95em}
+.t-classic .chips li::before{content:"";position:absolute;left:.1em;top:.5em;width:.4em;height:.4em;transform:rotate(45deg);background:var(--ac)}
+.t-classic .inf{margin:.55em 0;font-size:.92em}
+.t-classic .inf b{display:block;font-family:var(--ff-sans);font-size:.7em;letter-spacing:.14em;text-transform:uppercase;color:var(--ac);font-weight:800}
+.t-classic .lang{margin:.6em 0;font-size:.95em}
+.t-classic .lang-n{font-weight:600;display:block}
+.t-classic .lang-l{font-family:var(--ff-sans);font-size:.78em;color:#6a7385;margin-left:.2em}
+.t-classic .dots{margin-right:.5em}
+
+/* ---------------- Modèle 3 : BANDEAU (en-tête coloré + colonne teintée) ---------------- */
+.cv.t-band{display:flex;flex-direction:column}
+.t-band .band{
+  position:relative;overflow:hidden;color:var(--on);display:flex;align-items:center;justify-content:space-between;gap:2em;
+  padding:2.6em 2.5em 2.4em;background:linear-gradient(115deg,var(--bg1) 0%,var(--bg2) 100%);
+}
+.t-band .band::before{content:"";position:absolute;right:-4.5em;top:-6em;width:19em;height:19em;border-radius:50%;background:rgba(var(--on-rgb),.08)}
+.t-band .band::after{content:"";position:absolute;right:7em;bottom:-7em;width:12em;height:12em;border-radius:50%;background:rgba(var(--on-rgb),.06)}
+.t-band .band>*{position:relative;z-index:1}
+.t-band .band h1{font-size:2.9em;line-height:1.02;letter-spacing:-.015em;color:var(--on)}
+.t-band .fn{font-weight:300}
+.t-band .ln{font-weight:800;text-transform:uppercase}
+.t-band .job{margin-top:.6em;font-size:1.02em;font-weight:600;letter-spacing:.22em;text-transform:uppercase;opacity:.92}
+.t-band .ctl{display:flex;flex-wrap:wrap;gap:.5em 1.4em;margin-top:1.3em;font-size:.86em}
+.t-band .ctl li{display:flex;align-items:center;gap:.55em}
+.t-band .photo{flex:none;width:9.8em;height:9.8em;border:.3em solid rgba(var(--on-rgb),.85);box-shadow:0 .6em 1.6em rgba(0,0,0,.25)}
+.t-band .body{flex:1;display:grid;grid-template-columns:1fr 15.6em}
+.t-band .col-l{padding:2.1em 2em 2.2em 2.5em}
+.t-band .col-r{background:var(--ac-l);padding:2.1em 1.7em 2.2em}
+.t-band .sec{margin-bottom:1.6em}
+.t-band .sec-title{display:flex;align-items:center;gap:.65em;font-size:.9em;font-weight:800;text-transform:uppercase;letter-spacing:.17em;color:var(--ac);margin-bottom:.95em}
+.t-band .sec-title::before{content:"";width:1.5em;height:.28em;border-radius:1em;background:var(--ac)}
+.t-band .col-l .item{position:relative;padding-left:1.1em;border-left:3px solid rgba(var(--ac-rgb),.28);margin-bottom:1.25em}
+.t-band .item-p{color:var(--ac-d);background:rgba(var(--ac-rgb),.1);padding:.14em .75em;border-radius:2em}
+.t-band .inf{margin:.6em 0;font-size:.9em}
+.t-band .inf b{display:block;font-size:.72em;text-transform:uppercase;letter-spacing:.13em;color:var(--ac);font-weight:800}
+.t-band .chips{display:flex;flex-wrap:wrap;gap:.42em}
+.t-band .chips li{background:#fff;color:var(--ac-d);border:1px solid rgba(var(--ac-rgb),.28);border-radius:2em;padding:.22em .8em;font-size:.84em;font-weight:600}
+.t-band .lang{margin:.7em 0;font-size:.92em}
+.t-band .lang-n{display:block;font-weight:600;color:#1b2434}
+.t-band .dots{margin-top:.3em}
+.t-band .lang-l{display:none}
+
+/* =====================================================================
+   3. IMPRESSION (bouton « Imprimer » → Enregistrer au format PDF)
+   ===================================================================== */
+@page{size:A4;margin:0}
+@media print{
+  html,body{background:#fff!important}
+  .app-header,.form-panel,.toolbar,.page-info,.mobile-nav,.toast,.pg-guide,.preview-actions,.site-footer{display:none!important}
+  .layout{display:block!important;padding:0!important;max-width:none!important}
+  body[data-view] .preview-panel{display:block!important}
+  .preview-panel{position:static!important;max-height:none!important;overflow:visible!important;padding:0!important}
+  .paper-wrap{height:auto!important;max-width:none!important;box-shadow:none!important;border-radius:0!important}
+  .paper-scaler{transform:none!important}
+  .cv{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+
+<body data-view="form">
+
+<!-- ======================= EN-TÊTE ======================= -->
+<header class="app-header">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">CV</span>
+    <div>
+      <h1>CV Express</h1>
+      <p>Créez un CV élégant et téléchargez-le en PDF</p>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn ghost" id="btnExample" type="button">Voir un exemple</button>
+    <button class="btn ghost" id="btnReset" type="button">Tout effacer</button>
+    <button class="btn primary" id="btnPdf" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>
+      Télécharger en PDF
+    </button>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- ======================= FORMULAIRE ======================= -->
+  <div class="form-panel" id="form">
+
+    <div class="card intro">
+      <span class="shield" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.2 7.8 8 9 4.8-1.2 8-4.5 8-9V6l-8-3z"/><path d="m9 12 2 2 4-4"/></svg>
+      </span>
+      <div>
+        <h2>Vos données restent chez vous</h2>
+        <p>Tout se passe dans votre navigateur : rien n'est envoyé ni enregistré. Si vous fermez ou actualisez la page, le CV est effacé : pensez à le télécharger.</p>
+      </div>
+    </div>
+
+    <!-- 1. Photo & identité -->
+    <section class="card sect">
+      <h2><span class="num">1</span>Photo et identité</h2>
+
+      <div class="photo-box">
+        <div class="photo-preview" id="photoPreview"><span>Votre<br>photo</span></div>
+        <div class="photo-ctl">
+          <label class="btn blue small" for="photoInput">Choisir une photo</label>
+          <input type="file" id="photoInput" accept="image/*" hidden>
+          <button class="btn line small" id="photoRemove" type="button" hidden>Retirer</button>
+          <p class="hint">JPG ou PNG, de préférence un portrait net sur fond clair.</p>
+        </div>
+      </div>
+      <div class="photo-adjust" id="photoAdjust" hidden>
+        <label>Zoom <input type="range" id="phZoom" min="1" max="3" step="0.05" value="1"></label>
+        <label>Horizontal <input type="range" id="phX" min="0" max="100" value="50"></label>
+        <label>Vertical <input type="range" id="phY" min="0" max="100" value="25"></label>
+      </div>
+
+      <div class="grid2">
+        <label class="f"><span>Prénom *</span><input data-k="prenom" type="text" autocomplete="given-name" placeholder="Ex. Josué"></label>
+        <label class="f"><span>Nom *</span><input data-k="nom" type="text" autocomplete="family-name" placeholder="Ex. Mabiala"></label>
+        <label class="f span2"><span>Titre professionnel / poste visé</span><input data-k="titre" type="text" placeholder="Ex. Administrateur Systèmes et Réseaux"></label>
+      </div>
+    </section>
+
+    <!-- 2. Coordonnées -->
+    <section class="card sect">
+      <h2><span class="num">2</span>Coordonnées</h2>
+      <div class="grid2">
+        <label class="f"><span>Téléphone</span><input data-k="tel" type="tel" autocomplete="tel" placeholder="Ex. +242 06 000 00 00"></label>
+        <label class="f"><span>E-mail</span><input data-k="email" type="email" autocomplete="email" placeholder="Ex. prenom.nom@email.com"></label>
+        <label class="f span2"><span>Adresse</span><input data-k="adresse" type="text" autocomplete="street-address" placeholder="Ex. Brazzaville, République du Congo"></label>
+        <label class="f"><span>LinkedIn</span><input data-k="linkedin" type="text" placeholder="Ex. linkedin.com/in/votre-nom"></label>
+        <label class="f"><span>Site web / portfolio</span><input data-k="web" type="text" placeholder="Ex. monportfolio.com"></label>
+      </div>
+    </section>
+
+    <!-- 3. Profil -->
+    <section class="card sect">
+      <h2><span class="num">3</span>Profil</h2>
+      <label class="f"><span>Présentez-vous en 3 à 4 lignes</span>
+        <textarea data-k="profil" rows="5" placeholder="Ex. Jeune diplômé motivé, passionné par les réseaux et la cybersécurité. Rigoureux, curieux et à l'aise en équipe, je recherche un poste où mettre mes compétences au service d'une organisation exigeante."></textarea>
+      </label>
+    </section>
+
+    <!-- 4. Expériences -->
+    <section class="card sect">
+      <h2><span class="num">4</span>Expériences professionnelles<span class="opt">stages inclus</span></h2>
+      <div data-list-box="experiences"></div>
+      <button type="button" class="add-btn" data-add="experiences">+ Ajouter une expérience</button>
+    </section>
+
+    <!-- 5. Formation -->
+    <section class="card sect">
+      <h2><span class="num">5</span>Formation</h2>
+      <div data-list-box="formations"></div>
+      <button type="button" class="add-btn" data-add="formations">+ Ajouter une formation</button>
+    </section>
+
+    <!-- 6. Compétences -->
+    <section class="card sect">
+      <h2><span class="num">6</span>Compétences</h2>
+      <div class="tags" data-tags="competences"><div class="chips"></div><input type="text" placeholder="Tapez une compétence puis Entrée"></div>
+      <p class="hint">Ex. : Administration Linux, Réseaux TCP/IP, Wazuh, Word/Excel… Appuyez sur Entrée ou sur la virgule pour valider.</p>
+    </section>
+
+    <!-- 7. Langues -->
+    <section class="card sect">
+      <h2><span class="num">7</span>Langues</h2>
+      <div data-list-box="langues"></div>
+      <button type="button" class="add-btn" data-add="langues">+ Ajouter une langue</button>
+    </section>
+
+    <!-- 8. Certifications -->
+    <section class="card sect">
+      <h2><span class="num">8</span>Certifications et attestations<span class="opt">facultatif</span></h2>
+      <div data-list-box="certifications"></div>
+      <button type="button" class="add-btn" data-add="certifications">+ Ajouter une certification</button>
+    </section>
+
+    <!-- 9. Informations personnelles -->
+    <section class="card sect">
+      <h2><span class="num">9</span>Informations personnelles<span class="opt">facultatif</span></h2>
+      <div class="grid2">
+        <label class="f"><span>Date de naissance</span><input data-k="naissance" type="text" placeholder="Ex. 12 mars 2001"></label>
+        <label class="f"><span>Nationalité</span><input data-k="nationalite" type="text" placeholder="Ex. Congolaise"></label>
+        <label class="f"><span>Situation familiale</span><input data-k="famille" type="text" placeholder="Ex. Célibataire"></label>
+        <label class="f"><span>Permis de conduire</span><input data-k="permis" type="text" placeholder="Ex. Permis B"></label>
+      </div>
+    </section>
+
+    <!-- 10. Centres d'intérêt -->
+    <section class="card sect">
+      <h2><span class="num">10</span>Centres d'intérêt<span class="opt">facultatif</span></h2>
+      <div class="tags" data-tags="interets"><div class="chips"></div><input type="text" placeholder="Tapez un centre d'intérêt puis Entrée"></div>
+    </section>
+
+  </div>
+
+  <!-- ======================= APERÇU ======================= -->
+  <aside class="preview-panel">
+    <details class="card toolbar" id="toolbar" open>
+     <summary>Personnaliser le design <small>modèle · couleur · fond</small></summary>
+     <div class="tb-body">
+      <div class="tb-row">
+        <span class="tb-l">Modèle</span>
+        <div class="seg" id="segTemplate">
+          <button type="button" data-v="modern" class="on">Moderne</button>
+          <button type="button" data-v="classic">Élégant</button>
+          <button type="button" data-v="band">Bandeau</button>
+        </div>
+      </div>
+      <div class="tb-row">
+        <span class="tb-l">Couleur</span>
+        <div class="swatches" id="swatches"></div>
+        <span class="color-name" id="colorName">Bleu nuit</span>
+      </div>
+      <div class="tb-row">
+        <span class="tb-l">Fond</span>
+        <div class="seg" id="segFill">
+          <button type="button" data-v="solid" class="on">Coloré</button>
+          <button type="button" data-v="light">Clair</button>
+        </div>
+      </div>
+      <div class="tb-row">
+        <span class="tb-l">Texte</span>
+        <div class="seg" id="segSize">
+          <button type="button" data-v="compact">Compact</button>
+          <button type="button" data-v="normal" class="on">Normal</button>
+          <button type="button" data-v="large">Aéré</button>
+        </div>
+      </div>
+      <div class="tb-row">
+        <span class="tb-l">Photo</span>
+        <div class="seg" id="segShape">
+          <button type="button" data-v="circle" class="on">Ronde</button>
+          <button type="button" data-v="rounded">Arrondie</button>
+          <button type="button" data-v="square">Carrée</button>
+        </div>
+      </div>
+     </div>
+    </details>
+
+    <div class="paper-wrap" id="paperWrap">
+      <div class="paper-scaler" id="scaler">
+        <div class="cv" id="cv"></div>
+      </div>
+    </div>
+
+    <div class="preview-actions">
+      <button class="btn blue" id="btnPdf2" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>
+        Télécharger en PDF
+      </button>
+      <button class="btn line" id="btnPrint" type="button" title="Ouvre la fenêtre d'impression : choisissez « Enregistrer au format PDF » pour obtenir un PDF au texte sélectionnable.">Imprimer</button>
+    </div>
+    <p class="page-info" id="pageInfo"></p>
+  </aside>
+</main>
+
+<footer class="site-footer">
+  Conçu avec soin par <strong>MWENOBANGUE Labs</strong> · Aucune donnée n'est collectée ni conservée.
+</footer>
+
+<!-- Navigation mobile -->
+<nav class="mobile-nav" aria-label="Navigation">
+  <button type="button" class="btn tab on" data-go="form">Formulaire</button>
+  <button type="button" class="btn tab" data-go="preview">Aperçu</button>
+  <button type="button" class="btn primary" id="btnPdf3">PDF</button>
+</nav>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* =====================================================================
+   OUTILS
+   ===================================================================== */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const PAGE_W = 794, PAGE_H = 1122;           // A4 à 96 dpi (hauteur légèrement < 1122,9 pour éviter une page blanche)
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const val = s => (s ?? '').toString().trim();
+
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3800);
+}
+
+/* Couleurs */
+function hexToRgb(h) {
+  h = h.replace('#', '');
+  if (h.length === 3) h = h.split('').map(c => c + c).join('');
+  const n = parseInt(h, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+const rgbToHex = ([r, g, b]) => '#' + [r, g, b].map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
+const mix = (rgb, target, t) => rgb.map((v, i) => v + (target[i] - v) * t);
+function lum([r, g, b]) {
+  const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); };
+  return .2126 * f(r) + .7152 * f(g) + .0722 * f(b);
+}
+
+/* =====================================================================
+   ÉTAT (en mémoire uniquement — rien n'est stocké)
+   ===================================================================== */
+const blank = () => ({
+  photo: '',
+  prenom: '', nom: '', titre: '',
+  tel: '', email: '', adresse: '', linkedin: '', web: '',
+  naissance: '', nationalite: '', famille: '', permis: '',
+  profil: '',
+  experiences: [], formations: [], competences: [], langues: [], certifications: [], interets: []
+});
+let S = blank();
+const design = { template: 'modern', accent: '#1f4e79', fill: 'solid', size: 'normal', shape: 'circle' };
+let dirty = false;
+
+/* Listes dynamiques : configuration des champs */
+const LEVELS = [['1','Notions'],['2','Élémentaire'],['3','Intermédiaire'],['4','Courant'],['5','Langue maternelle']];
+const LISTS = {
+  experiences: {
+    label: 'Expérience',
+    blank: () => ({ poste:'', org:'', lieu:'', periode:'', desc:'' }),
+    fields: [
+      { k:'poste',   l:'Poste occupé',            ph:'Ex. Stagiaire support IT' },
+      { k:'org',     l:'Entreprise / organisme',  ph:'Ex. Direction Générale du Trésor' },
+      { k:'lieu',    l:'Lieu',                    ph:'Ex. Brazzaville' },
+      { k:'periode', l:'Période',                 ph:'Ex. Août 2026 – Nov. 2026' },
+      { k:'desc',    l:'Missions et réalisations (une par ligne)', type:'textarea', span:true,
+        ph:'Ex.\nAssistance aux utilisateurs et dépannage\nMaintenance du parc informatique' }
+    ]
+  },
+  formations: {
+    label: 'Formation',
+    blank: () => ({ diplome:'', org:'', lieu:'', periode:'', desc:'' }),
+    fields: [
+      { k:'diplome', l:'Diplôme / formation',    ph:'Ex. BTS Analyse et Programmation' },
+      { k:'org',     l:'Établissement',          ph:'Ex. ESGAE' },
+      { k:'lieu',    l:'Lieu',                   ph:'Ex. Brazzaville' },
+      { k:'periode', l:'Période',                ph:'Ex. 2023 – 2026' },
+      { k:'desc',    l:'Détails (facultatif, une ligne par point)', type:'textarea', span:true, ph:'Ex. Mention Bien' }
+    ]
+  },
+  langues: {
+    label: 'Langue',
+    blank: () => ({ nom:'', niveau:'4' }),
+    fields: [
+      { k:'nom',    l:'Langue', ph:'Ex. Français' },
+      { k:'niveau', l:'Niveau', type:'select', options: LEVELS }
+    ]
+  },
+  certifications: {
+    label: 'Certification',
+    blank: () => ({ titre:'', org:'', annee:'' }),
+    fields: [
+      { k:'titre', l:'Intitulé', ph:'Ex. Cisco CCNA — Introduction to Networks', span:true },
+      { k:'org',   l:'Organisme', ph:'Ex. Cisco Networking Academy' },
+      { k:'annee', l:'Année', ph:'Ex. 2026' }
+    ]
+  }
+};
+
+/* =====================================================================
+   FORMULAIRE : champs simples, listes, étiquettes
+   ===================================================================== */
+function fieldHTML(f, v) {
+  const span = f.span ? ' span2' : '';
+  let inner;
+  if (f.type === 'textarea') {
+    inner = `<textarea data-f="${f.k}" rows="4" placeholder="${esc(f.ph || '')}">${esc(v)}</textarea>`;
+  } else if (f.type === 'select') {
+    inner = `<select data-f="${f.k}">${f.options.map(([o, l]) => `<option value="${o}"${String(v) === o ? ' selected' : ''}>${l}</option>`).join('')}</select>`;
+  } else {
+    inner = `<input data-f="${f.k}" type="text" value="${esc(v)}" placeholder="${esc(f.ph || '')}">`;
+  }
+  return `<label class="f${span}"><span>${f.l}</span>${inner}</label>`;
+}
+
+function renderList(name) {
+  const cfg = LISTS[name], arr = S[name], box = $(`[data-list-box="${name}"]`);
+  box.innerHTML = arr.length ? arr.map((it, i) => `
+    <div class="li" data-i="${i}">
+      <div class="li-head">
+        <b>${cfg.label} ${i + 1}</b>
+        <span class="li-actions">
+          <button type="button" data-act="up" aria-label="Monter" title="Monter"${i === 0 ? ' disabled' : ''}>↑</button>
+          <button type="button" data-act="down" aria-label="Descendre" title="Descendre"${i === arr.length - 1 ? ' disabled' : ''}>↓</button>
+          <button type="button" data-act="del" class="danger" aria-label="Supprimer" title="Supprimer">✕</button>
+        </span>
+      </div>
+      <div class="li-fields">${cfg.fields.map(f => fieldHTML(f, it[f.k] ?? '')).join('')}</div>
+    </div>`).join('') : '<p class="empty">Aucun élément pour le moment.</p>';
+}
+
+function renderTags(name) {
+  const wrap = $(`[data-tags="${name}"]`);
+  $('.chips', wrap).innerHTML = S[name].map((t, i) =>
+    `<span class="chip">${esc(t)}<button type="button" data-rm="${i}" aria-label="Retirer ${esc(t)}">✕</button></span>`).join('');
+}
+
+function syncForm() {
+  $$('[data-k]').forEach(el => { el.value = S[el.dataset.k] ?? ''; });
+  Object.keys(LISTS).forEach(renderList);
+  renderTags('competences'); renderTags('interets');
+  updatePhotoUI();
+}
+
+/* Saisie des champs simples */
+$('#form').addEventListener('input', ev => {
+  const t = ev.target;
+  if (t.dataset.k) {
+    S[t.dataset.k] = t.value;
+  } else if (t.dataset.f) {
+    const li = t.closest('.li'), box = t.closest('[data-list-box]');
+    S[box.dataset.listBox][+li.dataset.i][t.dataset.f] = t.value;
+  } else return;
+  dirty = true;
+  scheduleRender();
+});
+
+/* Boutons : ajouter / monter / descendre / supprimer / retirer une étiquette */
+$('#form').addEventListener('click', ev => {
+  const add = ev.target.closest('[data-add]');
+  if (add) {
+    const name = add.dataset.add;
+    S[name].push(LISTS[name].blank());
+    renderList(name);
+    const last = $$(`[data-list-box="${name}"] .li`).pop();
+    if (last) { const first = $('input,textarea', last); first && first.focus({ preventScroll: false }); }
+    dirty = true; scheduleRender();
+    return;
+  }
+  const act = ev.target.closest('[data-act]');
+  if (act) {
+    const li = act.closest('.li'), name = act.closest('[data-list-box]').dataset.listBox, i = +li.dataset.i, arr = S[name];
+    if (act.dataset.act === 'del') arr.splice(i, 1);
+    if (act.dataset.act === 'up' && i > 0) [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+    if (act.dataset.act === 'down' && i < arr.length - 1) [arr[i + 1], arr[i]] = [arr[i], arr[i + 1]];
+    renderList(name); dirty = true; scheduleRender();
+    return;
+  }
+  const rm = ev.target.closest('[data-rm]');
+  if (rm) {
+    const name = rm.closest('[data-tags]').dataset.tags;
+    S[name].splice(+rm.dataset.rm, 1);
+    renderTags(name); dirty = true; scheduleRender();
+    return;
+  }
+  const tags = ev.target.closest('[data-tags]');
+  if (tags) $('input', tags).focus();
+});
+
+/* Étiquettes : Entrée / virgule / point-virgule / perte de focus */
+$$('[data-tags]').forEach(wrap => {
+  const name = wrap.dataset.tags, input = $('input', wrap);
+  const commit = () => {
+    input.value.split(/[,;\n]/).map(val).filter(Boolean).forEach(t => { if (!S[name].includes(t)) S[name].push(t); });
+    input.value = '';
+    renderTags(name); dirty = true; scheduleRender();
+  };
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ',' || e.key === ';') { e.preventDefault(); if (val(input.value)) commit(); }
+    else if (e.key === 'Backspace' && !input.value && S[name].length) { S[name].pop(); renderTags(name); scheduleRender(); }
+  });
+  input.addEventListener('input', () => { if (/[,;]/.test(input.value)) commit(); });
+  input.addEventListener('blur', () => { if (val(input.value)) commit(); });
+});
+
+/* =====================================================================
+   PHOTO (recadrage carré dans le navigateur, rien n'est envoyé)
+   ===================================================================== */
+let photoImg = null;
+const P = { zoom: 1, x: 50, y: 25 };
+
+function updatePhotoUI() {
+  const pv = $('#photoPreview');
+  if (S.photo) {
+    pv.style.backgroundImage = `url(${S.photo})`;
+    pv.classList.add('has'); pv.innerHTML = '';
+  } else {
+    pv.style.backgroundImage = '';
+    pv.classList.remove('has'); pv.innerHTML = '<span>Votre<br>photo</span>';
+  }
+  $('#photoRemove').hidden = !S.photo;
+  $('#photoAdjust').hidden = !photoImg;
+}
+
+function drawPhoto() {
+  if (!photoImg) return;
+  const w = photoImg.naturalWidth, h = photoImg.naturalHeight, base = Math.min(w, h), s = base / P.zoom;
+  const sx = (w - s) * P.x / 100, sy = (h - s) * P.y / 100, N = 520;
+  const c = document.createElement('canvas');
+  c.width = c.height = N;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, N, N);
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(photoImg, sx, sy, s, s, 0, 0, N, N);
+  S.photo = c.toDataURL('image/jpeg', .92);
+  updatePhotoUI(); scheduleRender();
+}
+
+$('#photoInput').addEventListener('change', ev => {
+  const f = ev.target.files && ev.target.files[0];
+  if (!f) return;
+  if (!/^image\//.test(f.type)) { toast('Veuillez choisir un fichier image (JPG, PNG…).'); return; }
+  const url = URL.createObjectURL(f), img = new Image();
+  img.onload = () => {
+    photoImg = img; P.zoom = 1; P.x = 50; P.y = 25;
+    $('#phZoom').value = 1; $('#phX').value = 50; $('#phY').value = 25;
+    dirty = true; drawPhoto();
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); toast('Impossible de lire cette image.'); };
+  img.src = url;
+  ev.target.value = '';
+});
+$('#phZoom').addEventListener('input', e => { P.zoom = +e.target.value; drawPhoto(); });
+$('#phX').addEventListener('input', e => { P.x = +e.target.value; drawPhoto(); });
+$('#phY').addEventListener('input', e => { P.y = +e.target.value; drawPhoto(); });
+$('#photoRemove').addEventListener('click', () => { S.photo = ''; photoImg = null; updatePhotoUI(); scheduleRender(); });
+
+/* =====================================================================
+   MODÈLES DE CV
+   ===================================================================== */
+const ICON_PATHS = {
+  phone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>',
+  mail:  '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+  pin:   '<path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',
+  in:    '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 11v6M8 7.5v.01M12 17v-6m0 3c0-2 1.5-3 3-3s2 1 2 3v3"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>'
+};
+/* Les couleurs sont écrites dans le SVG lui-même : l'export PDF ne lit pas les feuilles de style des SVG. */
+const icon = (n, color, size = 13) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON_PATHS[n]}</svg>`;
+
+let K = { ac: '#1f4e79', on: '#fff' };    // couleurs courantes (mises à jour à chaque rendu)
+
+const filled = (arr, keys) => arr.filter(it => keys.some(k => val(it[k])));
+
+function descHTML(s) {
+  const lines = val(s).split('\n').map(val).filter(Boolean);
+  if (!lines.length) return '';
+  if (lines.length === 1 && !/^[-•*]/.test(lines[0])) return `<p>${esc(lines[0])}</p>`;
+  return '<ul>' + lines.map(l => `<li>${esc(l.replace(/^[-•*]\s*/, ''))}</li>`).join('') + '</ul>';
+}
+const itemHTML = (t, sub, per, desc) => `
+  <div class="item">
+    <div class="item-top"><div class="item-t">${esc(t)}</div>${val(per) ? `<div class="item-p">${esc(per)}</div>` : ''}</div>
+    ${sub.filter(val).length ? `<div class="item-s">${sub.filter(val).map(esc).join(' · ')}</div>` : ''}
+    ${descHTML(desc)}
+  </div>`;
+const sec = (title, inner) => inner ? `<section class="sec"><h2 class="sec-title">${title}</h2><div class="sec-body">${inner}</div></section>` : '';
+
+const B = {
+  profil: () => val(S.profil) ? `<p class="profil">${esc(val(S.profil)).replace(/\n+/g, '<br>')}</p>` : '',
+  exp:    () => filled(S.experiences, ['poste','org','desc']).map(it => itemHTML(it.poste, [it.org, it.lieu], it.periode, it.desc)).join(''),
+  form:   () => filled(S.formations, ['diplome','org','desc']).map(it => itemHTML(it.diplome, [it.org, it.lieu], it.periode, it.desc)).join(''),
+  cert:   () => filled(S.certifications, ['titre','org']).map(it => itemHTML(it.titre, [it.org], it.annee, '')).join(''),
+  skills: () => S.competences.length ? `<ul class="chips">${S.competences.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : '',
+  inter:  () => S.interets.length ? `<ul class="chips">${S.interets.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : '',
+  langs:  () => filled(S.langues, ['nom']).map(l => {
+    const n = +l.niveau || 3, lab = (LEVELS.find(x => +x[0] === n) || [, ''])[1];
+    return `<div class="lang"><span class="lang-n">${esc(l.nom)}</span><span class="dots">${[1,2,3,4,5].map(i => `<i class="${i <= n ? 'on' : ''}"></i>`).join('')}</span><span class="lang-l">${lab}</span></div>`;
+  }).join(''),
+  infos:  () => [['Né(e) le', S.naissance], ['Nationalité', S.nationalite], ['Situation', S.famille], ['Permis', S.permis]]
+              .filter(([, v]) => val(v)).map(([l, v]) => `<div class="inf"><b>${l}</b>${esc(v)}</div>`).join('')
+};
+const contacts = () => [['phone', S.tel], ['mail', S.email], ['pin', S.adresse], ['in', S.linkedin], ['globe', S.web]].filter(([, v]) => val(v));
+const photoHTML = () => S.photo ? `<img class="photo" alt="Photo de profil" src="${S.photo}">` : '';
+const nameHTML = () => {
+  const p = val(S.prenom), n = val(S.nom);
+  return `<h1><span class="fn${p ? '' : ' ph-name'}">${esc(p || 'Prénom')}</span> <span class="ln${n ? '' : ' ph-name'}">${esc(n || 'Nom')}</span></h1>` +
+         (val(S.titre) ? `<div class="job">${esc(S.titre)}</div>` : '');
+};
+
+const TPL = {
+  /* --- Moderne --- */
+  modern() {
+    const ct = contacts().map(([i, v]) => `<div class="ct"><span class="ico">${icon(i, K.on, 12)}</span><span>${esc(v)}</span></div>`).join('');
+    const side = photoHTML() + sec('Contact', ct) + sec('Informations', B.infos()) + sec('Compétences', B.skills()) +
+                 sec('Langues', B.langs()) + sec('Centres d’intérêt', B.inter());
+    const main = `<header class="head">${nameHTML()}</header>` + sec('Profil', B.profil()) +
+                 sec('Expérience professionnelle', B.exp()) + sec('Formation', B.form()) + sec('Certifications', B.cert());
+    return `<aside class="side">${side}</aside><div class="main">${main}</div>`;
+  },
+  /* --- Élégant --- */
+  classic() {
+    const ct = contacts().map(([i, v]) => `<li>${icon(i, K.ac, 12)}<span>${esc(v)}</span></li>`).join('');
+    const head = `<header class="head"><div>${nameHTML()}${ct ? `<ul class="ctl">${ct}</ul>` : ''}</div>${photoHTML()}</header>`;
+    const left = sec('Profil', B.profil()) + sec('Expérience professionnelle', B.exp()) + sec('Formation', B.form()) + sec('Certifications', B.cert());
+    const right = sec('Informations', B.infos()) + sec('Compétences', B.skills()) + sec('Langues', B.langs()) + sec('Centres d’intérêt', B.inter());
+    return head + `<div class="body"><div class="col-l">${left}</div><div class="col-r">${right}</div></div>`;
+  },
+  /* --- Bandeau --- */
+  band() {
+    const ct = contacts().map(([i, v]) => `<li>${icon(i, K.on, 12)}<span>${esc(v)}</span></li>`).join('');
+    const band = `<header class="band"><div>${nameHTML()}${ct ? `<ul class="ctl">${ct}</ul>` : ''}</div>${photoHTML()}</header>`;
+    const left = sec('Profil', B.profil()) + sec('Expérience professionnelle', B.exp()) + sec('Formation', B.form()) + sec('Certifications', B.cert());
+    const right = sec('Informations', B.infos()) + sec('Compétences', B.skills()) + sec('Langues', B.langs()) + sec('Centres d’intérêt', B.inter());
+    return band + `<div class="body"><div class="col-l">${left}</div><div class="col-r">${right}</div></div>`;
+  }
+};
+
+/* =====================================================================
+   RENDU + APERÇU À L'ÉCHELLE
+   ===================================================================== */
+const cv = $('#cv'), scaler = $('#scaler'), wrap = $('#paperWrap');
+let pages = 1, raf = 0;
+
+function scheduleRender() { cancelAnimationFrame(raf); raf = requestAnimationFrame(render); }
+
+/* Pagination : aucun bloc (expérience, formation, titre de section…) n'est coupé par un saut de page.
+   Si un bloc déborde, on le repousse en haut de la page suivante. L'aperçu et le PDF sont donc identiques. */
+const PAD_TOP = 46, PAD_BOT = 42;
+function paginate() {
+  scaler.style.transform = 'none';
+  const base = cv.getBoundingClientRect().top;
+  $$('.item, .lang, .profil, .sec-title', cv).forEach(el => {
+    const r = el.getBoundingClientRect();
+    const top = r.top - base;
+    let h = r.height;
+    if (el.classList.contains('sec-title')) {              // un titre ne reste jamais seul en bas de page
+      const nx = el.parentElement.querySelector('.item, .lang, .profil, .chips');
+      h += (nx ? Math.min(nx.getBoundingClientRect().height, 260) : 30) + 14;
+    }
+    const page = Math.floor(top / PAGE_H);
+    const limit = (page + 1) * PAGE_H - PAD_BOT;
+    if (top + h > limit && h < PAGE_H - PAD_TOP - PAD_BOT && top > page * PAGE_H + PAD_TOP + 6) {
+      const push = (page + 1) * PAGE_H + PAD_TOP - top;
+      el.style.marginTop = ((parseFloat(getComputedStyle(el).marginTop) || 0) + push) + 'px';
+    }
+  });
+}
+
+function render() {
+  const rgb = hexToRgb(design.accent);
+  const dark = rgbToHex(mix(rgb, [0, 0, 0], .32));
+  const light = rgbToHex(mix(rgb, [255, 255, 255], .91));
+  const light_ = design.fill === 'light';
+  /* Fond « coloré » : la couleur remplit la colonne / le bandeau. Fond « clair » : teinte très pâle, texte sombre. */
+  const bg1 = light_ ? light : design.accent;
+  const bg2 = light_ ? rgbToHex(mix(rgb, [255, 255, 255], .82)) : dark;
+  const onRgb = light_ ? [31, 41, 55] : (lum(rgb) > .5 ? [17, 24, 39] : [255, 255, 255]);
+  const on = rgbToHex(onRgb);
+  K = { ac: design.accent, on };
+
+  cv.className = `cv t-${design.template} sz-${design.size} ph-${design.shape}`;
+  cv.style.setProperty('--ac', design.accent);
+  cv.style.setProperty('--ac-rgb', rgb.join(','));
+  cv.style.setProperty('--ac-d', dark);
+  cv.style.setProperty('--ac-l', light);
+  cv.style.setProperty('--bg1', bg1);
+  cv.style.setProperty('--bg2', bg2);
+  cv.style.setProperty('--on', on);
+  cv.style.setProperty('--on-rgb', onRgb.join(','));
+  cv.style.minHeight = '0';
+  cv.innerHTML = TPL[design.template]();
+  paginate();
+
+  const h = cv.offsetHeight;
+  pages = Math.max(1, Math.ceil(h / PAGE_H));
+  cv.style.minHeight = (pages * PAGE_H) + 'px';
+
+  $$('.pg-guide', scaler).forEach(n => n.remove());
+  for (let i = 1; i < pages; i++) {
+    const g = document.createElement('div');
+    g.className = 'pg-guide'; g.style.top = (i * PAGE_H) + 'px';
+    g.innerHTML = `<span>Page ${i + 1}</span>`;
+    scaler.appendChild(g);
+  }
+  fit();
+
+  $('#pageInfo').innerHTML = pages === 1
+    ? '<b>1 page A4.</b> Ajoutez ou modifiez des informations : l’aperçu se met à jour instantanément.'
+    : `<b>${pages} pages A4.</b> Pour tenir sur une seule page, choisissez « Compact » ou raccourcissez certains textes. Les traits rouges indiquent les sauts de page.`;
+}
+
+let lastW = 0;
+function fit() {
+  const w = wrap.clientWidth;
+  if (!w) return;
+  const sc = Math.min(1, w / PAGE_W);
+  scaler.style.transform = `scale(${sc})`;
+  wrap.style.height = (scaler.offsetHeight * sc) + 'px';
+  lastW = w;
+}
+new ResizeObserver(() => { if (wrap.clientWidth !== lastW) fit(); }).observe(wrap);
+window.addEventListener('resize', fit);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleRender);
+
+/* =====================================================================
+   BARRE D'OUTILS : modèle, couleur, taille, forme de la photo
+   ===================================================================== */
+const COLORS = [
+  ['#1f4e79', 'Bleu nuit'], ['#2563eb', 'Bleu roi'], ['#0284c7', 'Bleu ciel'], ['#0d9488', 'Turquoise'],
+  ['#047857', 'Vert émeraude'], ['#4d7c0f', 'Vert olive'], ['#b45309', 'Ocre'], ['#ea580c', 'Orange'],
+  ['#dc2626', 'Rouge'], ['#9f1239', 'Bordeaux'], ['#db2777', 'Rose'], ['#7c3aed', 'Violet'],
+  ['#4338ca', 'Indigo'], ['#1f2937', 'Anthracite'], ['#0b0b0c', 'Noir']
+];
+const swBox = $('#swatches');
+swBox.innerHTML = COLORS.map(([c, n]) => `<button type="button" class="sw${c === design.accent ? ' on' : ''}" data-c="${c}" style="background:${c}" title="${n}" aria-label="${n}"></button>`).join('') +
+  `<label class="sw custom" title="Couleur personnalisée"><input type="color" id="accentCustom" value="${design.accent}" aria-label="Couleur personnalisée"></label>`;
+swBox.addEventListener('click', e => {
+  const b = e.target.closest('.sw[data-c]');
+  if (!b) return;
+  setAccent(b.dataset.c);
+});
+$('#accentCustom').addEventListener('input', e => setAccent(e.target.value, true));
+function setAccent(c, custom) {
+  design.accent = c;
+  $$('.sw[data-c]', swBox).forEach(b => b.classList.toggle('on', !custom && b.dataset.c === c));
+  $('#accentCustom').value = c;
+  const known = COLORS.find(x => x[0] === c);
+  $('#colorName').textContent = known && !custom ? known[1] : 'Couleur personnalisée ' + c.toUpperCase();
+  scheduleRender();
+}
+function bindSeg(id, key) {
+  $(id).addEventListener('click', e => {
+    const b = e.target.closest('button[data-v]');
+    if (!b) return;
+    design[key] = b.dataset.v;
+    $$('button', $(id)).forEach(x => x.classList.toggle('on', x === b));
+    scheduleRender();
+  });
+}
+bindSeg('#segTemplate', 'template'); bindSeg('#segFill', 'fill'); bindSeg('#segSize', 'size'); bindSeg('#segShape', 'shape');
+
+/* =====================================================================
+   EXEMPLE (personnage fictif) / EFFACER
+   ===================================================================== */
+function sampleAvatar() {
+  const c = document.createElement('canvas'); c.width = c.height = 520;
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 520, 520); g.addColorStop(0, '#dfe7f5'); g.addColorStop(1, '#b9c9e6');
+  x.fillStyle = g; x.fillRect(0, 0, 520, 520);
+  x.fillStyle = '#6f84ad';
+  x.beginPath(); x.arc(260, 210, 92, 0, Math.PI * 2); x.fill();
+  x.beginPath(); x.ellipse(260, 520, 190, 190, 0, Math.PI, 0); x.fill();
+  return c.toDataURL('image/jpeg', .9);
+}
+const EXAMPLE = () => ({
+  photo: sampleAvatar(),
+  prenom: 'Jean-Marc', nom: 'Okombi', titre: 'Technicien Systèmes et Réseaux',
+  tel: '+242 06 000 00 00', email: 'jean.okombi@example.com', adresse: 'Brazzaville, République du Congo',
+  linkedin: 'linkedin.com/in/jean-okombi', web: '',
+  naissance: '12 mars 2001', nationalite: 'Congolaise', famille: 'Célibataire', permis: 'Permis B',
+  profil: 'Technicien rigoureux et curieux, titulaire d’un BTS en informatique et en cours de licence en administration systèmes et réseaux. Passionné par la sécurité des infrastructures, je cherche à mettre mon sérieux, mon sens du service et ma capacité d’apprentissage au profit d’une équipe informatique exigeante.',
+  experiences: [
+    { poste: 'Stagiaire support informatique', org: 'Direction des Systèmes d’Information', lieu: 'Brazzaville', periode: 'Août – Nov. 2026',
+      desc: 'Assistance aux utilisateurs et résolution des incidents de premier niveau\nMaintenance et inventaire du parc de postes de travail\nParticipation à la mise en place d’une solution de téléphonie IP\nRédaction de procédures techniques à destination des agents' },
+    { poste: 'Assistant bureautique', org: 'Administration publique', lieu: 'Brazzaville', periode: '2023 – 2024',
+      desc: 'Saisie, mise en forme et archivage de documents officiels\nGestion du courrier et du classement numérique' }
+  ],
+  formations: [
+    { diplome: 'Licence Administration Systèmes et Réseaux', org: 'Établissement d’enseignement supérieur', lieu: 'Brazzaville', periode: '2026 – 2027', desc: 'Linux, virtualisation, supervision, sécurité des réseaux' },
+    { diplome: 'BTS Analyse et Programmation', org: 'Établissement d’enseignement supérieur', lieu: 'Brazzaville', periode: '2023 – 2026', desc: '' },
+    { diplome: 'Baccalauréat technique — Maintenance des systèmes informatiques', org: 'Lycée technique', lieu: 'Brazzaville', periode: '2020 – 2023', desc: '' }
+  ],
+  competences: ['Administration Linux', 'Réseaux TCP/IP', 'Virtualisation', 'Supervision (GLPI, Wazuh)', 'HTML / CSS / JavaScript', 'Pack Office'],
+  langues: [{ nom: 'Français', niveau: '5' }, { nom: 'Lingala', niveau: '5' }, { nom: 'Anglais', niveau: '3' }],
+  certifications: [{ titre: 'Introduction to Networks', org: 'Cisco Networking Academy', annee: '2026' }],
+  interets: ['Cybersécurité', 'Création de contenu', 'Musculation', 'Lecture']
+});
+
+$('#btnExample').addEventListener('click', () => {
+  S = EXAMPLE(); photoImg = null; dirty = true; syncForm(); render();
+  toast('Exemple chargé : modifiez-le ou effacez-le pour saisir vos informations.');
+});
+$('#btnReset').addEventListener('click', () => {
+  if (!confirm('Effacer toutes les informations saisies ?')) return;
+  S = blank(); photoImg = null; dirty = false; syncForm(); render();
+});
+
+/* =====================================================================
+   EXPORT PDF
+   ===================================================================== */
+const slug = s => val(s).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+
+let busy = false;
+function setBusy(b) {
+  busy = b;
+  ['#btnPdf', '#btnPdf2', '#btnPdf3'].forEach(id => { const el = $(id); el.disabled = b; });
+  $('#btnPdf2').lastChild.textContent = b ? ' Génération en cours…' : ' Télécharger en PDF';
+}
+
+async function downloadPDF() {
+  if (busy) return;
+  if (!val(S.prenom) && !val(S.nom)) {
+    toast('Renseignez au moins votre prénom ou votre nom avant de télécharger.');
+    setView('form');
+    const f = $('[data-k="prenom"]'); f && f.focus();
+    return;
+  }
+  if (typeof window.html2pdf !== 'function') {
+    toast('Le module PDF n’a pas pu se charger (connexion ?). Utilisez « Imprimer » puis « Enregistrer au format PDF ».');
+    return;
+  }
+  setBusy(true);
+  /* On exporte une copie du CV placée hors écran, à taille réelle (indépendante de l'échelle de l'aperçu). */
+  const host = document.createElement('div');
+  host.style.cssText = `position:fixed;left:-10000px;top:0;width:${PAGE_W}px;pointer-events:none`;
+  const clone = cv.cloneNode(true);
+  clone.removeAttribute('id');
+  host.appendChild(clone);
+  document.body.appendChild(host);
+  try {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    const name = ['CV', slug(S.prenom), slug(S.nom)].filter(Boolean).join('_') + '.pdf';
+    await html2pdf().set({
+      margin: 0,
+      filename: name,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: [] }   // les sauts de page sont déjà gérés par paginate()
+    }).from(clone).save();
+    toast('Votre CV a été téléchargé.');
+  } catch (err) {
+    console.error(err);
+    toast('La génération du PDF a échoué. Essayez « Imprimer » puis « Enregistrer au format PDF ».');
+  } finally {
+    host.remove();
+    setBusy(false);
+  }
+}
+['#btnPdf', '#btnPdf2', '#btnPdf3'].forEach(id => $(id).addEventListener('click', downloadPDF));
+$('#btnPrint').addEventListener('click', () => {
+  if (!val(S.prenom) && !val(S.nom)) { toast('Renseignez d’abord votre prénom ou votre nom.'); setView('form'); return; }
+  window.print();
+});
+
+/* =====================================================================
+   NAVIGATION MOBILE
+   ===================================================================== */
+function setView(v) {
+  document.body.dataset.view = v;
+  $$('.mobile-nav .tab').forEach(b => b.classList.toggle('on', b.dataset.go === v));
+  window.scrollTo({ top: 0 });
+  requestAnimationFrame(() => { fit(); });
+}
+$$('.mobile-nav .tab').forEach(b => b.addEventListener('click', () => setView(b.dataset.go)));
+
+/* Sur téléphone, la barre de personnalisation démarre repliée pour laisser voir le CV */
+if (window.matchMedia('(max-width:959px)').matches) $('#toolbar').open = false;
+
+/* Avertir avant de quitter une page contenant des données non téléchargées */
+window.addEventListener('beforeunload', e => {
+  if (dirty) { e.preventDefault(); e.returnValue = ''; }
+});
+
+/* =====================================================================
+   DÉMARRAGE
+   ===================================================================== */
+syncForm();
+render();
+})();
+</script>
+</body>
+</html>
