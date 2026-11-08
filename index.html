@@ -151,6 +151,13 @@ button,input,select,textarea{font:inherit;color:inherit}
 .li-actions button:disabled{opacity:.35;cursor:default}
 .li-actions button.danger:hover{background:#fdecea;color:var(--danger);border-color:#f5c6c0}
 .li-fields{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.li.row{display:flex;align-items:center;gap:.5rem;padding:.45rem .5rem .45rem .7rem;margin-bottom:.55rem}
+.li.row .n{flex:none;width:22px;height:22px;border-radius:50%;background:#e8f0ff;color:#1d429a;font-size:.72rem;font-weight:700;display:grid;place-items:center}
+.li.row input{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:10px;padding:.55rem .7rem;font-size:.92rem;background:#fff}
+.li.row input:focus{outline:0;border-color:var(--brand-2)}
+.li.row .li-actions button{width:32px;height:32px}
+.add-btn.small{padding:.6rem}
+.sublist>span{display:block;margin-bottom:.45rem}
 .empty{margin:0 0 .8rem;font-size:.84rem;color:var(--muted);text-align:center;padding:.9rem;border:1.5px dashed var(--line);border-radius:12px}
 .add-btn{width:100%;border:1.5px dashed #b6c4de;background:#f5f8ff;color:var(--brand);border-radius:12px;padding:.75rem;font-weight:700;cursor:pointer;font-size:.86rem}
 .add-btn:hover{background:#eaf1ff;border-color:var(--brand-2)}
@@ -259,6 +266,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 }
 @media (hover:none){
   .li-actions button{width:40px;height:40px}
+  .li.row .li-actions button{width:36px;height:36px}
+  .li.row{gap:.35rem;padding-left:.5rem}
   .chip button{width:28px;height:28px}
   .sw{width:34px;height:34px}
 }
@@ -673,7 +682,10 @@ button,input,select,textarea{font:inherit;color:inherit}
     <section class="card sect">
       <h2><span class="num">2</span>Coordonnées</h2>
       <div class="grid2">
-        <label class="f"><span>Téléphone</span><input data-k="tel" type="tel" autocomplete="tel" placeholder="Ex. +242 06 000 00 00"></label>
+        <div class="f span2 sublist"><span>Téléphone(s)</span>
+          <div data-list-box="telephones"></div>
+          <button type="button" class="add-btn small" data-add="telephones">+ Ajouter un numéro</button>
+        </div>
         <label class="f"><span>E-mail</span><input data-k="email" type="email" autocomplete="email" placeholder="Ex. prenom.nom@email.com"></label>
         <label class="f span2"><span>Adresse</span><input data-k="adresse" type="text" autocomplete="street-address" placeholder="Ex. Brazzaville, République du Congo"></label>
         <label class="f"><span>LinkedIn</span><input data-k="linkedin" type="text" placeholder="Ex. linkedin.com/in/votre-nom"></label>
@@ -706,8 +718,9 @@ button,input,select,textarea{font:inherit;color:inherit}
     <!-- 6. Compétences -->
     <section class="card sect">
       <h2><span class="num">6</span>Compétences</h2>
-      <div class="tags" data-tags="competences"><div class="chips"></div><input type="text" placeholder="Tapez une compétence puis Entrée"></div>
-      <p class="hint">Ex. : Administration Linux, Réseaux TCP/IP, Wazuh, Word/Excel… Appuyez sur Entrée ou sur la virgule pour valider.</p>
+      <div data-list-box="competences"></div>
+      <button type="button" class="add-btn" data-add="competences">+ Ajouter une compétence</button>
+      <p class="hint">Ex. : Administration Linux, Réseaux TCP/IP, Wazuh, Word/Excel… Une compétence par ligne.</p>
     </section>
 
     <!-- 7. Langues -->
@@ -752,7 +765,8 @@ button,input,select,textarea{font:inherit;color:inherit}
     <!-- 12. Centres d'intérêt -->
     <section class="card sect">
       <h2><span class="num">12</span>Centres d'intérêt<span class="opt">facultatif</span></h2>
-      <div class="tags" data-tags="interets"><div class="chips"></div><input type="text" placeholder="Tapez un centre d'intérêt puis Entrée"></div>
+      <div data-list-box="interets"></div>
+      <button type="button" class="add-btn" data-add="interets">+ Ajouter un centre d'intérêt</button>
     </section>
 
   </div>
@@ -890,10 +904,10 @@ const T = () => I18N[design.lang] || I18N.fr;
 const blank = () => ({
   photo: '',
   prenom: '', nom: '', titre: '',
-  tel: '', email: '', adresse: '', linkedin: '', web: '',
+  email: '', adresse: '', linkedin: '', web: '',
   naissance: '', nationalite: '', famille: '', permis: '',
   profil: '',
-  experiences: [], formations: [], competences: [], langues: [], projets: [], certifications: [], references: [], interets: []
+  telephones: [{ num: '' }], experiences: [], formations: [], competences: [], langues: [], projets: [], certifications: [], references: [], interets: []
 });
 let S = blank();
 const TEMPLATES = [
@@ -907,6 +921,9 @@ let dirty = false;
 /* Listes dynamiques : configuration des champs du formulaire */
 const LEVELS = [['1','Notions'],['2','Élémentaire'],['3','Intermédiaire'],['4','Courant'],['5','Langue maternelle']];
 const LISTS = {
+  telephones: { label: 'Numéro', simple: true, ph: 'Ex. +242 06 000 00 00', type: 'tel', blank: () => ({ num: '' }), fields: [{ k: 'num' }] },
+  competences: { label: 'Compétence', simple: true, ph: 'Ex. Administration Linux', blank: () => ({ nom: '' }), fields: [{ k: 'nom' }] },
+  interets: { label: 'Centre d’intérêt', simple: true, ph: 'Ex. Lecture', blank: () => ({ nom: '' }), fields: [{ k: 'nom' }] },
   experiences: {
     label: 'Expérience',
     blank: () => ({ poste:'', org:'', lieu:'', periode:'', desc:'' }),
@@ -986,6 +1003,20 @@ function fieldHTML(f, v) {
 
 function renderList(name) {
   const cfg = LISTS[name], arr = S[name], box = $(`[data-list-box="${name}"]`);
+  if (cfg.simple) {
+    const k = cfg.fields[0].k;
+    box.innerHTML = arr.map((it, i) => `
+    <div class="li row" data-i="${i}">
+      <span class="n">${i + 1}</span>
+      <input data-f="${k}" type="${cfg.type || 'text'}" value="${esc(it[k] ?? '')}" placeholder="${esc(cfg.ph)}" aria-label="${cfg.label} ${i + 1}"${cfg.type === 'tel' ? ' autocomplete="tel"' : ''} enterkeyhint="next">
+      <span class="li-actions">
+        <button type="button" data-act="up" aria-label="Monter" title="Monter"${i === 0 ? ' disabled' : ''}>↑</button>
+        <button type="button" data-act="down" aria-label="Descendre" title="Descendre"${i === arr.length - 1 ? ' disabled' : ''}>↓</button>
+        <button type="button" data-act="del" class="danger" aria-label="Supprimer" title="Supprimer">✕</button>
+      </span>
+    </div>`).join('');
+    return;
+  }
   box.innerHTML = arr.length ? arr.map((it, i) => `
     <div class="li" data-i="${i}">
       <div class="li-head">
@@ -1000,16 +1031,9 @@ function renderList(name) {
     </div>`).join('') : '<p class="empty">Aucun élément pour le moment.</p>';
 }
 
-function renderTags(name) {
-  const wrap = $(`[data-tags="${name}"]`);
-  $('.chips', wrap).innerHTML = S[name].map((t, i) =>
-    `<span class="chip">${esc(t)}<button type="button" data-rm="${i}" aria-label="Retirer ${esc(t)}">✕</button></span>`).join('');
-}
-
 function syncForm() {
   $$('[data-k]').forEach(el => { el.value = S[el.dataset.k] ?? ''; });
   Object.keys(LISTS).forEach(renderList);
-  renderTags('competences'); renderTags('interets');
   updatePhotoUI();
 }
 
@@ -1047,31 +1071,17 @@ $('#form').addEventListener('click', ev => {
     renderList(name); dirty = true; scheduleRender();
     return;
   }
-  const rm = ev.target.closest('[data-rm]');
-  if (rm) {
-    const name = rm.closest('[data-tags]').dataset.tags;
-    S[name].splice(+rm.dataset.rm, 1);
-    renderTags(name); dirty = true; scheduleRender();
-    return;
-  }
-  const tags = ev.target.closest('[data-tags]');
-  if (tags) $('input', tags).focus();
 });
 
-/* Étiquettes : Entrée / virgule / point-virgule / perte de focus */
-$$('[data-tags]').forEach(wrap => {
-  const name = wrap.dataset.tags, input = $('input', wrap);
-  const commit = () => {
-    input.value.split(/[,;\n]/).map(val).filter(Boolean).forEach(t => { if (!S[name].includes(t)) S[name].push(t); });
-    input.value = '';
-    renderTags(name); dirty = true; scheduleRender();
-  };
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ',' || e.key === ';') { e.preventDefault(); if (val(input.value)) commit(); }
-    else if (e.key === 'Backspace' && !input.value && S[name].length) { S[name].pop(); renderTags(name); scheduleRender(); }
-  });
-  input.addEventListener('input', () => { if (/[,;]/.test(input.value)) commit(); });
-  input.addEventListener('blur', () => { if (val(input.value)) commit(); });
+/* Entrée dans une liste simple : ajoute la ligne suivante */
+$('#form').addEventListener('keydown', ev => {
+  if (ev.key !== 'Enter' || !ev.target.matches('.li.row input')) return;
+  ev.preventDefault();
+  const li = ev.target.closest('.li'), name = li.closest('[data-list-box]').dataset.listBox, i = +li.dataset.i;
+  const k = LISTS[name].fields[0].k;
+  if (!val(S[name][i][k])) return;
+  if (i === S[name].length - 1) { S[name].push(LISTS[name].blank()); renderList(name); dirty = true; scheduleRender(); }
+  const rows = $$(`[data-list-box="${name}"] .li input`); rows[i + 1] && rows[i + 1].focus();
 });
 
 /* =====================================================================
@@ -1186,6 +1196,7 @@ const itemHTML = (t, sub, per, desc) => `
   </div>`;
 const sec = (title, inner) => inner ? `<section class="sec"><h2 class="sec-title">${title}</h2><div class="sec-body">${inner}</div></section>` : '';
 
+const chipsHTML = a => { const l = a.map(x => val(x.nom)).filter(Boolean); return l.length ? `<ul class="chips">${l.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : ''; };
 const B = {
   profil: () => val(S.profil) ? `<p class="profil">${esc(val(S.profil)).replace(/\n+/g, '<br>')}</p>` : '',
   exp:    () => filled(S.experiences, ['poste','org','desc']).map(it => itemHTML(it.poste, [it.org, it.lieu], it.periode, it.desc)).join(''),
@@ -1193,8 +1204,8 @@ const B = {
   proj:   () => filled(S.projets, ['nom','desc']).map(it => itemHTML(it.nom, [it.techno], it.annee, it.desc)).join(''),
   cert:   () => filled(S.certifications, ['titre','org']).map(it => itemHTML(it.titre, [it.org], it.annee, '')).join(''),
   refs:   () => filled(S.references, ['nom','poste']).map(it => itemHTML(it.nom, [it.poste], '', it.contact)).join(''),
-  skills: () => S.competences.length ? `<ul class="chips">${S.competences.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : '',
-  inter:  () => S.interets.length ? `<ul class="chips">${S.interets.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : '',
+  skills: () => chipsHTML(S.competences),
+  inter:  () => chipsHTML(S.interets),
   langs:  () => filled(S.langues, ['nom']).map(l => {
     const n = Math.min(5, Math.max(1, +l.niveau || 3)), lab = T().levels[n - 1];
     return `<div class="lang"><span class="lang-n">${esc(l.nom)}</span><span class="dots">${[1,2,3,4,5].map(i => `<i class="${i <= n ? 'on' : ''}"></i>`).join('')}</span><span class="lang-l">${lab}</span></div>`;
@@ -1218,7 +1229,7 @@ const SEC = {
 const MAIN = () => SEC.profil() + SEC.exp() + SEC.form() + SEC.proj() + SEC.cert() + SEC.refs();
 const SIDE = () => SEC.infos() + SEC.skills() + SEC.langs() + SEC.inter();
 
-const contacts = () => [['phone', S.tel], ['mail', S.email], ['pin', S.adresse], ['in', S.linkedin], ['globe', S.web]].filter(([, v]) => val(v));
+const contacts = () => [...S.telephones.map(t => ['phone', t.num]), ['mail', S.email], ['pin', S.adresse], ['in', S.linkedin], ['globe', S.web]].filter(([, v]) => val(v));
 const photoHTML = () => S.photo ? `<img class="photo" alt="Photo de profil" src="${S.photo}">` : '';
 const nameHTML = () => {
   const p = val(S.prenom), n = val(S.nom);
@@ -1477,7 +1488,7 @@ function sampleAvatar() {
 const EXAMPLE = () => ({
   photo: sampleAvatar(),
   prenom: 'Jean-Marc', nom: 'Okombi', titre: 'Technicien Systèmes et Réseaux',
-  tel: '+242 06 000 00 00', email: 'jean.okombi@example.com', adresse: 'Brazzaville, République du Congo',
+  telephones: [{ num: '+242 06 000 00 00' }], email: 'jean.okombi@example.com', adresse: 'Brazzaville, République du Congo',
   linkedin: 'linkedin.com/in/jean-okombi', web: '',
   naissance: '12 mars 2001', nationalite: 'Congolaise', famille: 'Célibataire', permis: 'Permis B',
   profil: 'Technicien rigoureux et curieux, titulaire d’un BTS en informatique et en cours de licence en administration systèmes et réseaux. Passionné par la sécurité des infrastructures, je cherche à mettre mon sérieux, mon sens du service et ma capacité d’apprentissage au profit d’une équipe informatique exigeante.',
@@ -1492,7 +1503,7 @@ const EXAMPLE = () => ({
     { diplome: 'BTS Analyse et Programmation', org: 'Établissement d’enseignement supérieur', lieu: 'Brazzaville', periode: '2023 – 2026', desc: '' },
     { diplome: 'Baccalauréat technique — Maintenance informatique', org: 'Lycée technique', lieu: 'Brazzaville', periode: '2020 – 2023', desc: '' }
   ],
-  competences: ['Administration Linux', 'Réseaux TCP/IP', 'Virtualisation', 'Supervision (GLPI, Wazuh)', 'HTML / CSS / JavaScript', 'Pack Office'],
+  competences: ['Administration Linux', 'Réseaux TCP/IP', 'Virtualisation', 'Supervision (GLPI, Wazuh)', 'HTML / CSS / JavaScript', 'Pack Office'].map(nom => ({ nom })),
   langues: [{ nom: 'Français', niveau: '5' }, { nom: 'Lingala', niveau: '5' }, { nom: 'Anglais', niveau: '3' }],
   projets: [
     { nom: 'Plateforme de gestion scolaire', techno: 'PHP, MySQL', annee: '2026', desc: 'Gestion des élèves, des notes et des paiements\nInterface adaptée aux téléphones' },
@@ -1500,7 +1511,7 @@ const EXAMPLE = () => ({
   ],
   certifications: [{ titre: 'Introduction to Networks', org: 'Cisco Networking Academy', annee: '2026' }],
   references: [{ nom: 'Mme Claire Ngoma', poste: 'Responsable informatique, Organisation exemple', contact: 'claire.ngoma@example.com' }],
-  interets: ['Cybersécurité', 'Création de contenu', 'Musculation', 'Lecture']
+  interets: ['Cybersécurité', 'Création de contenu', 'Musculation', 'Lecture'].map(nom => ({ nom }))
 });
 
 function loadExample() {
@@ -1533,7 +1544,7 @@ $('#btnExport').addEventListener('click', () => {
 
 function cleanData(o) {
   const b = blank(), str = (v, n) => typeof v === 'string' ? v.slice(0, n) : '';
-  ['prenom','nom','titre','tel','email','adresse','linkedin','web','naissance','nationalite','famille','permis'].forEach(k => { b[k] = str(o[k], 300); });
+  ['prenom','nom','titre','email','adresse','linkedin','web','naissance','nationalite','famille','permis'].forEach(k => { b[k] = str(o[k], 300); });
   b.profil = str(o.profil, 3000);
   if (typeof o.photo === 'string' && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(o.photo) && o.photo.length < 3e6) b.photo = o.photo;
   Object.keys(LISTS).forEach(name => {
@@ -1544,9 +1555,13 @@ function cleanData(o) {
       return x;
     });
   });
+  /* anciennes sauvegardes : tel / listes de textes */
+  if (!Array.isArray(o.telephones) && typeof o.tel === 'string' && o.tel) b.telephones = [{ num: str(o.tel, 60) }];
   ['competences', 'interets'].forEach(k => {
-    if (Array.isArray(o[k])) b[k] = o[k].filter(x => typeof x === 'string').map(x => x.slice(0, 80)).slice(0, 60);
+    if (Array.isArray(o[k]) && o[k].some(x => typeof x === 'string'))
+      b[k] = o[k].filter(x => typeof x === 'string').map(x => ({ nom: x.slice(0, 80) })).slice(0, 60);
   });
+  if (!b.telephones.length) b.telephones = [{ num: '' }];
   return b;
 }
 $('#importInput').addEventListener('change', async ev => {
